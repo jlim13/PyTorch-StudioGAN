@@ -281,10 +281,10 @@ class make_worker(object):
                             fake_cls_mask = make_mask(fake_labels, self.num_classes, self.rank)
                             dis_acml_loss += self.contrastive_lambda*self.contrastive_criterion(cls_embed_real, cls_proxies_real,
                                                                                                 real_cls_mask, real_labels, t, self.margin)
-                            dis_acml_loss += self.contrastive_lambda*self.contrastive_criterion(cls_embed_fake, cls_proxies_fake,
+                            dis_acml_loss += self.contrastive_lambda*self.contrastive_criterion(cls_embed_fake, -cls_proxies_fake,
                                                                                                 fake_cls_mask, fake_labels, t, self.margin)
 
-                            dis_acml_loss += calculate_ortho_reg(self.embedding_layer.weight, self.rank)
+                            # dis_acml_loss += calculate_ortho_reg(self.embedding_layer.weight, self.rank)
                         else:
                             pass
 
