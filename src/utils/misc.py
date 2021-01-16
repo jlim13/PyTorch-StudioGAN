@@ -238,9 +238,11 @@ def find_string(list_, string):
         if string == s:
             return i
 
+
 def find_and_remove(path):
     if os.path.isfile(path):
         os.remove(path)
+
 
 def calculate_all_sn(model):
     sigmas = {}
@@ -303,6 +305,7 @@ def change_generator_mode(gen, gen_copy, standing_statistics, standing_step, pri
             gen_tmp.apply(set_deterministic_op_train)
     else:
         gen_tmp.eval()
+        gen_tmp.apply(set_bn_train)
         gen_tmp.apply(set_deterministic_op_train)
     return gen_tmp
 
@@ -359,6 +362,7 @@ def plot_spectrum_image(real_spectrum, fake_spectrum, run_name, logger, log=Fals
     if log:
         logger.info("Save image to {}".format(save_path))
 
+
 def plot_tsne_scatter_plot(df, tsne_results, flag, run_name, logger):
     directory = join('./figures', run_name, flag)
 
@@ -412,6 +416,7 @@ def plot_sim_heatmap(similarity, xlabels, ylabels, run_name, logger, log=False):
     if log:
         logger.info("Save image to {}".format(save_path))
     return fig
+
 
 def save_images_npz(run_name, data_loader, num_samples, num_classes, generator, discriminator, is_generate,
                     truncated_factor,  prior, latent_op, latent_op_step, latent_op_alpha, latent_op_beta, device):
@@ -522,6 +527,7 @@ def generate_images_for_KNN(batch_size, real_label, gen_model, dis_model, trunca
 
     return batch_images, list(fake_labels.detach().cpu().numpy())
 
+
 class SaveOutput:
     def __init__(self):
         self.outputs = []
@@ -532,3 +538,12 @@ class SaveOutput:
 
     def clear(self):
         self.outputs = []
+
+def calculate_ortho_reg(m, rank):
+    with torch.enable_grad():
+        reg = 1e-6
+        param_flat = m.view(m.shape[0], -1)
+        sym = torch.mm(param_flat, torch.t(param_flat))
+        sym -= torch.eye(param_flat.shape[0]).to(rank)
+        ortho_loss = reg * sym.abs().sum()
+    return ortho_loss
