@@ -197,6 +197,14 @@ def set_bn_train(m):
     if isinstance(m, torch.nn.modules.batchnorm._BatchNorm):
         m.train()
 
+def untrack_bn_statistics(m):
+    if isinstance(m, torch.nn.modules.batchnorm._BatchNorm):
+        m.track_running_stats = False
+
+def track_bn_statistics(m):
+    if isinstance(m, torch.nn.modules.batchnorm._BatchNorm):
+        m.track_running_stats = True
+
 
 def set_deterministic_op_train(m):
     if isinstance(m, torch.nn.modules.conv.Conv2d):
@@ -292,6 +300,7 @@ def change_generator_mode(gen, gen_copy, standing_statistics, standing_step, pri
     if training:
         gen.train()
         gen_tmp.train()
+        gen_tmp.apply(track_bn_statistics)
         return gen_tmp
 
     if standing_statistics:
@@ -306,6 +315,7 @@ def change_generator_mode(gen, gen_copy, standing_statistics, standing_step, pri
     else:
         gen_tmp.eval()
         gen_tmp.apply(set_bn_train)
+        gen_tmp.apply(untrack_bn_statistics)
         gen_tmp.apply(set_deterministic_op_train)
     return gen_tmp
 
