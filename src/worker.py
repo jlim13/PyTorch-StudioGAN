@@ -282,7 +282,7 @@ class make_worker(object):
                             dis_acml_loss += self.contrastive_lambda*self.contrastive_criterion(cls_embed_real, cls_proxies_real,
                                                                                                 real_cls_mask, real_labels, t, self.margin)
                             dis_acml_loss += self.contrastive_lambda*self.contrastive_criterion(cls_embed_fake, cls_proxies_fake,
-                                                                                                fake_cls_mask, fake_labels, t, self.margin)
+                                                                                                fake_cls_mask, fake_labels, t, self.margin, fake=True)
 
                         else:
                             pass

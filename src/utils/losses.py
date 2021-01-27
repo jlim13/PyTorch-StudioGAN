@@ -132,7 +132,10 @@ class Conditional_Contrastive_loss(torch.nn.Module):
         return v
 
 
-    def forward(self, inst_embed, proxy, negative_mask, labels, temperature, margin):
+    def forward(self, inst_embed, proxy, negative_mask, labels, temperature, margin, fake=False):
+        if fake:
+            proxy = proxy.detach()
+
         similarity_matrix = self.calculate_similarity_matrix(inst_embed, inst_embed)/temperature
         similarity_matrix = self.remove_diag(similarity_matrix)
         similarity_max, _ = torch.max(similarity_matrix, dim=1, keepdim=True)
@@ -143,7 +146,7 @@ class Conditional_Contrastive_loss(torch.nn.Module):
         inst2inst_negatives = mask_4_remove_positives*torch.exp(similarity_matrix)
 
         pos_loss = F.relu(margin - inst2proxy_positive)
-        neg_loss = torch.log(torch.exp(inst2proxy_positive) + inst2inst_negatives.sum(dim=1))
+        neg_loss = torch.log(inst2inst_negatives.sum(dim=1))
 
         criterion = pos_loss + neg_loss
         return criterion.mean()
