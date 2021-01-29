@@ -262,7 +262,7 @@ class make_worker(object):
                             dis_out_real = self.dis_model(real_images, real_labels)
                             dis_out_fake = self.dis_model(fake_images, fake_labels)
                         elif self.conditional_strategy in ["NT_Xent_GAN", "Proxy_NCA_GAN", "ContraGAN"]:
-                            cls_proxies_real, cls_embed_real, dis_out_real = self.dis_model(real_images, real_labels)
+                            cls_proxies_real, cls_embed_real, dis_out_real = self.dis_model(real_images, real_labels, fake=False)
                             cls_proxies_fake, cls_embed_fake, dis_out_fake = self.dis_model(fake_images, fake_labels, fake=True)
                         else:
                             raise NotImplementedError
@@ -280,7 +280,7 @@ class make_worker(object):
                             real_cls_mask = make_mask(real_labels, self.num_classes, self.rank)
                             fake_cls_mask = make_mask(fake_labels, self.num_classes, self.rank)
                             dis_acml_loss += self.contrastive_lambda*self.contrastive_criterion(cls_embed_real, cls_proxies_real,
-                                                                                                real_cls_mask, real_labels, t, self.margin)
+                                                                                                real_cls_mask, real_labels, t, self.margin, fake=False)
                             dis_acml_loss += self.contrastive_lambda*self.contrastive_criterion(cls_embed_fake, cls_proxies_fake,
                                                                                                 fake_cls_mask, fake_labels, t, self.margin, fake=True)
 
@@ -435,7 +435,7 @@ class make_worker(object):
                             gen_acml_loss += self.ce_loss(cls_out_fake, fake_labels)
                         elif self.conditional_strategy == "ContraGAN":
                             fake_cls_mask = make_mask(fake_labels, self.num_classes, self.rank)
-                            gen_acml_loss += self.contrastive_lambda*self.contrastive_criterion(cls_embed_fake, cls_proxies_fake, fake_cls_mask, fake_labels, t, self.margin)
+                            gen_acml_loss += self.contrastive_lambda*self.contrastive_criterion(cls_embed_fake, cls_proxies_fake, fake_cls_mask, fake_labels, t, self.margin, fake=False)
                         elif self.conditional_strategy == "Proxy_NCA_GAN":
                             gen_acml_loss += self.contrastive_lambda*self.NCA_criterion(cls_embed_fake, cls_proxies_fake, fake_labels)
                         elif self.conditional_strategy == "NT_Xent_GAN":
@@ -856,6 +856,7 @@ class make_worker(object):
     ################################################################################################################################
 
 
+    ################################################################################################################################
     def run_tsne(self, dataloader, standing_statistics, standing_step):
         if self.rank == 0: self.logger.info('Start tsne analysis....')
         if standing_statistics: self.counter += 1

@@ -225,7 +225,7 @@ class Discriminator(nn.Module):
             init_weights(self.modules, initialize)
 
 
-    def forward(self, x, label, evaluation=False):
+    def forward(self, x, label, evaluation=False, fake=False):
         with torch.cuda.amp.autocast() if self.mixed_precision is True and evaluation is False else dummy_context_mgr() as mp:
             h = x
             for index, blocklist in enumerate(self.blocks):
@@ -240,6 +240,18 @@ class Discriminator(nn.Module):
             if self.conditional_strategy == 'no':
                 authen_output = torch.squeeze(self.linear1(h))
                 return authen_output
+
+            elif self.conditional_strategy in ['ContraGAN', 'Proxy_NCA_GAN', 'NT_Xent_GAN']:
+                authen_output = torch.squeeze(self.linear1(h))
+                cls_proxy = self.embedding(label)
+                cls_embed = self.proj1(h)
+                if fake:
+                    cls_embed = self.pred1(self.activation(cls_embed))
+                    cls_embed = self.pred2(self.activation(cls_embed))
+                if self.normalize_embed:
+                    cls_proxy = F.normalize(cls_proxy, dim=1)
+                    cls_embed = F.normalize(cls_embed, dim=1)
+                return cls_proxy, cls_embed, authen_output
 
             elif self.conditional_strategy in ['ContraGAN', 'Proxy_NCA_GAN', 'NT_Xent_GAN']:
                 authen_output = torch.squeeze(self.linear1(h))

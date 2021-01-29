@@ -314,9 +314,9 @@ class Discriminator(nn.Module):
         if d_spectral_norm:
             self.linear1 = snlinear(in_features=self.out_dims[-1], out_features=1)
             if self.conditional_strategy in ['ContraGAN', 'Proxy_NCA_GAN', 'NT_Xent_GAN']:
-                self.linear2 = snlinear(in_features=self.out_dims[-1], out_features=hypersphere_dim)
-                if self.nonlinear_embed:
-                    self.linear3 = snlinear(in_features=hypersphere_dim, out_features=hypersphere_dim)
+                self.proj1 = snlinear(in_features=self.out_dims[-1], out_features=hypersphere_dim)
+                self.pred1 = snlinear(in_features=hypersphere_dim, out_features=hypersphere_dim//4)
+                self.pred2 = snlinear(in_features=hypersphere_dim//4, out_features=hypersphere_dim)
                 self.embedding = sn_embedding(num_classes, hypersphere_dim)
             elif self.conditional_strategy == 'ProjGAN':
                 self.embedding = sn_embedding(num_classes, self.out_dims[-1])
@@ -327,10 +327,10 @@ class Discriminator(nn.Module):
         else:
             self.linear1 = linear(in_features=self.out_dims[-1], out_features=1)
             if self.conditional_strategy in ['ContraGAN', 'Proxy_NCA_GAN', 'NT_Xent_GAN']:
-                self.linear2 = linear(in_features=self.out_dims[-1], out_features=hypersphere_dim)
-                if self.nonlinear_embed:
-                    self.linear3 = linear(in_features=hypersphere_dim, out_features=hypersphere_dim)
-                self.embedding = embedding(num_classes, hypersphere_dim)
+                self.proj1 = linear(in_features=self.out_dims[-1], out_features=hypersphere_dim)
+                self.pred1 = linear(in_features=hypersphere_dim, out_features=hypersphere_dim//4)
+                self.pred2 = linear(in_features=hypersphere_dim//4, out_features=hypersphere_dim)
+                self.embedding = sn_embedding(num_classes, hypersphere_dim)
             elif self.conditional_strategy == 'ProjGAN':
                 self.embedding = embedding(num_classes, self.out_dims[-1])
             elif self.conditional_strategy == 'ACGAN':
@@ -343,7 +343,7 @@ class Discriminator(nn.Module):
             init_weights(self.modules, initialize)
 
 
-    def forward(self, x, label, evaluation=False):
+    def forward(self, x, label, evaluation=False, fake=False):
         with torch.cuda.amp.autocast() if self.mixed_precision is True and evaluation is False else dummy_context_mgr() as mp:
             h = x
 
@@ -360,9 +360,10 @@ class Discriminator(nn.Module):
             elif self.conditional_strategy in ['ContraGAN', 'Proxy_NCA_GAN', 'NT_Xent_GAN']:
                 authen_output = torch.squeeze(self.linear1(h))
                 cls_proxy = self.embedding(label)
-                cls_embed = self.linear2(h)
-                if self.nonlinear_embed:
-                    cls_embed = self.linear3(self.activation(cls_embed))
+                cls_embed = self.proj1(h)
+                if fake:
+                    cls_embed = self.pred1(self.activation(cls_embed))
+                    cls_embed = self.pred2(self.activation(cls_embed))
                 if self.normalize_embed:
                     cls_proxy = F.normalize(cls_proxy, dim=1)
                     cls_embed = F.normalize(cls_embed, dim=1)
