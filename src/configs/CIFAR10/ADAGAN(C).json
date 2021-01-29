@@ -13,8 +13,9 @@
       "model": {
         "architecture": "big_resnet",
         "conditional_strategy": "ContraGAN",
-        "pos_collected_numerator": true,
+        "pos_collected_numerator": false,
         "hypersphere_dim": 512,
+        "bottleneck_dim": 128,
         "nonlinear_embed": false,
         "normalize_embed": true,
         "g_spectral_norm": true,
@@ -44,14 +45,14 @@
         "beta2": 0.999,
         "g_steps_per_iter": 1,
         "d_steps_per_iter": 5,
-        "total_step": 200000
+        "total_step": 312500
       },
   
       "loss_function": {
-        "adv_loss": "hinge",
+        "adv_loss": "vanilla",
   
         "contrastive_lambda": 1.0,
-        "margin": 0.0, 
+        "margin": 0.95,
         "tempering_type": "constant",
         "tempering_step": "N/A",
         "start_temperature": 1.0,
@@ -85,12 +86,12 @@
       },
   
       "training_and_sampling_setting":{
-        "random_flip_preprocessing": true,
+        "random_flip_preprocessing": false,
         "diff_aug": false,
   
         "ada": true,
-        "ada_target": 0.2,
-        "ada_length": 1000000,
+        "ada_target": 0.6,
+        "ada_length": 50000000,
   
         "prior": "gaussian",
         "truncated_factor": 1,

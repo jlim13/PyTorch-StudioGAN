@@ -15,6 +15,7 @@
         "conditional_strategy": "ProjGAN",
         "pos_collected_numerator": false,
         "hypersphere_dim": "N/A",
+        "bottleneck_dim": "N/A",
         "nonlinear_embed": false,
         "normalize_embed": false,
         "g_spectral_norm": true,
@@ -34,7 +35,7 @@
       "optimization": {
         "optimizer": "Adam",
         "batch_size": 64,
-        "accumulation_steps": 1, 
+        "accumulation_steps": 1,
         "d_lr": 0.0002,
         "g_lr": 0.0002,
         "momentum": "N/A",
@@ -44,14 +45,14 @@
         "beta2": 0.999,
         "g_steps_per_iter": 1,
         "d_steps_per_iter": 5,
-        "total_step": 200000
+        "total_step": 312500
       },
   
       "loss_function": {
-        "adv_loss": "hinge",
+        "adv_loss": "vanilla",
   
         "contrastive_lambda": "N/A",
-        "margin": "N/A", 
+        "margin": "N/A",
         "tempering_type": "N/A",
         "tempering_step": "N/A",
         "start_temperature": "N/A",
@@ -85,12 +86,12 @@
       },
   
       "training_and_sampling_setting":{
-        "random_flip_preprocessing": true,
+        "random_flip_preprocessing": false,
         "diff_aug": false,
 
         "ada": true,
         "ada_target": 0.6,
-        "ada_length": 5000000,
+        "ada_length": 50000000,
 
         "prior": "gaussian",
         "truncated_factor": 1,
