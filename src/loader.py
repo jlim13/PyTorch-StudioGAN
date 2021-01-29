@@ -116,7 +116,7 @@ def prepare_train_eval(rank, world_size, run_name, train_config, model_config, h
     else:
         raise NotImplementedError
 
-    if cfgs.LARS:
+    if cfgs.LARS_optimizer:
         G_optimizer = LARS(optimizer=G_optimizer, eps=1e-8, trust_coef=0.001)
         D_optimizer = LARS(optimizer=D_optimizer, eps=1e-8, trust_coef=0.001)
 
