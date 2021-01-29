@@ -15,6 +15,7 @@
         "conditional_strategy": "ContraGAN",
         "pos_collected_numerator": false,
         "hypersphere_dim": 512,
+        "bottleneck_dim": 64,
         "nonlinear_embed": false,
         "normalize_embed": true,
         "g_spectral_norm": true,
