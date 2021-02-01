@@ -84,6 +84,9 @@ def main():
     else:
         raise NotImplementedError
 
+    print (args.config_path)
+    exit()
+
     if model_config['data_processing']['dataset_name'] == 'cifar10':
         assert train_config['eval_type'] in ['train', 'test'], "Cifar10 does not contain dataset for validation."
     elif model_config['data_processing']['dataset_name'] in ['imagenet', 'tiny_imagenet', 'custom']:
