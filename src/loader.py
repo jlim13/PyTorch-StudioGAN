@@ -81,9 +81,6 @@ def prepare_train_eval(rank, world_size, run_name, train_config, model_config, h
                                   num_workers=cfgs.num_workers, sampler=train_sampler, drop_last=True)
     eval_dataloader = DataLoader(eval_dataset, batch_size=cfgs.batch_size, shuffle=False, pin_memory=True, num_workers=cfgs.num_workers, drop_last=False)
 
-    for x in train_dataloader:
-        print (x)
-        exit()
 
     ##### build model #####
     if rank == 0: logger.info('Build model...')
@@ -111,7 +108,9 @@ def prepare_train_eval(rank, world_size, run_name, train_config, model_config, h
 
     if rank == 0: logger.info(count_parameters(Dis))
     if rank == 0: logger.info(Dis)
-
+    
+    print (cfgs.ema)
+    exit()
 
     ### define loss functions and optimizers
     G_loss = {'vanilla': loss_dcgan_gen, 'least_square': loss_lsgan_gen, 'hinge': loss_hinge_gen, 'wasserstein': loss_wgan_gen}
