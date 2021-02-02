@@ -7,5 +7,5 @@ docker run -it --gpus all \
         -v /data/:/root/data \
         --volume /playpen/john/docker_scripts/.vimrc:/root/.vimrc \
         --workdir /root/code \
-        mgkang/studio_gan:latest /bin/zsh
+        mgkang/studiogan:latest /bin/bash
 

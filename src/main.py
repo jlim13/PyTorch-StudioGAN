@@ -84,14 +84,13 @@ def main():
     else:
         raise NotImplementedError
 
-    print (args.config_path)
-    exit()
 
     if model_config['data_processing']['dataset_name'] == 'cifar10':
         assert train_config['eval_type'] in ['train', 'test'], "Cifar10 does not contain dataset for validation."
     elif model_config['data_processing']['dataset_name'] in ['imagenet', 'tiny_imagenet', 'custom']:
         assert train_config['eval_type'] == 'train' or train_config['eval_type'] == 'valid', \
             "StudioGAN dose not support the evalutation protocol that uses the test dataset on imagenet, tiny imagenet, and custom datasets"
+    
 
     if train_config['distributed_data_parallel']:
         msg = "StudioGAN does not support image visualization, k_nearest_neighbor, interpolation, and frequency_analysis with DDP. " +\
@@ -101,7 +100,7 @@ def main():
 
     hdf5_path_train = make_hdf5(model_config['data_processing'], train_config, mode="train") \
         if train_config['load_all_data_in_memory'] else None
-
+    
     if train_config['seed'] == -1:
         cudnn.benchmark, cudnn.deterministic = True, False
     else:

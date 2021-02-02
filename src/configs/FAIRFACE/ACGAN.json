@@ -1,12 +1,13 @@
 {
     "data_processing":{
       "dataset_name": "fairface",
-      "data_path": "/data/face_recog/fairface-img-margin025-trainval/",
+      "data_path": "/root/data/face_recog/fairface-img-margin025-trainval/",
       "img_size": 224,
-      "num_classes": 10,
+      "num_classes": 126,
       "batch_size4prcsing": 256,
       "chunk_size": 500,
-      "compression": false
+      "compression": false,
+      "exp_type": "all"
     },
 
     "train": {
