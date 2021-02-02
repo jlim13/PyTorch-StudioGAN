@@ -49,8 +49,13 @@ def prepare_train_eval(rank, world_size, run_name, train_config, model_config, h
 
     ##### load dataset #####
     if rank == 0: logger.info('Load train datasets...')
-    train_dataset = LoadDataset(cfgs.dataset_name, cfgs.data_path, train=True, download=True, resize_size=cfgs.img_size,
-                                hdf5_path=hdf5_path_train, random_flip=cfgs.random_flip_preprocessing)
+    train_dataset = LoadDataset(cfgs.dataset_name, cfgs.data_path, train=True, 
+                        download=True, resize_size=cfgs.img_size,  
+                        hdf5_path=hdf5_path_train, 
+                        random_flip=cfgs.random_flip_preprocessing, 
+                        exp_type = model_config['data_processing']['exp_type'])
+   
+    
     if cfgs.reduce_train_dataset < 1.0:
         num_train = int(cfgs.reduce_train_dataset*len(train_dataset))
         train_dataset, _ = torch.utils.data.random_split(train_dataset, [num_train, len(train_dataset) - num_train])
@@ -58,8 +63,10 @@ def prepare_train_eval(rank, world_size, run_name, train_config, model_config, h
 
     if rank == 0: logger.info('Load {mode} datasets...'.format(mode=cfgs.eval_type))
     eval_mode = True if cfgs.eval_type == 'train' else False
-    eval_dataset = LoadDataset(cfgs.dataset_name, cfgs.data_path, train=eval_mode, download=True, resize_size=cfgs.img_size,
-                               hdf5_path=None, random_flip=False)
+    eval_dataset = LoadDataset(cfgs.dataset_name, cfgs.data_path, 
+                            train=eval_mode, download=True, resize_size=cfgs.img_size,
+                               hdf5_path=None, random_flip=False,
+                               exp_type = model_config['data_processing']['exp_type'])
     if rank == 0: logger.info('Eval dataset size : {dataset_size}'.format(dataset_size=len(eval_dataset)))
 
     if cfgs.distributed_data_parallel:
@@ -68,9 +75,12 @@ def prepare_train_eval(rank, world_size, run_name, train_config, model_config, h
     else:
         train_sampler = None
 
+    print (cfgs.num_workers)
+    cfgs.num_workers = 0
     train_dataloader = DataLoader(train_dataset, batch_size=cfgs.batch_size, shuffle=(train_sampler is None), pin_memory=True,
                                   num_workers=cfgs.num_workers, sampler=train_sampler, drop_last=True)
     eval_dataloader = DataLoader(eval_dataset, batch_size=cfgs.batch_size, shuffle=False, pin_memory=True, num_workers=cfgs.num_workers, drop_last=False)
+
 
     ##### build model #####
     if rank == 0: logger.info('Build model...')
@@ -98,7 +108,9 @@ def prepare_train_eval(rank, world_size, run_name, train_config, model_config, h
 
     if rank == 0: logger.info(count_parameters(Dis))
     if rank == 0: logger.info(Dis)
-
+    
+    print (cfgs.ema)
+    exit()
 
     ### define loss functions and optimizers
     G_loss = {'vanilla': loss_dcgan_gen, 'least_square': loss_lsgan_gen, 'hinge': loss_hinge_gen, 'wasserstein': loss_wgan_gen}
